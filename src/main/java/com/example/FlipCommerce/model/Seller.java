@@ -30,7 +30,7 @@ public class Seller {
     @Column(name = "mobile_no",unique = true,nullable = false)
     String mobNo;
 
-    @OneToMany(mappedBy = "selller",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "seller",cascade = CascadeType.ALL)
     List<Product> products = new ArrayList<>();
 
 }
