@@ -29,7 +29,6 @@ public class Item {
     @JoinColumn
     OrderEntity orderEntity;
 
-
     @ManyToOne
     @JoinColumn
     Cart cart;

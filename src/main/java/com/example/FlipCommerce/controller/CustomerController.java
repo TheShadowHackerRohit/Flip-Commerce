@@ -21,8 +21,13 @@ public class CustomerController {
     CustomerService customerService;
 
     @PostMapping("/add-customer")
-    public ResponseEntity addCustomer(@RequestBody CustomerRequestDto customerRequestDto)
+    public ResponseEntity addCustomer(@RequestBody CustomerRequestDto customerRequestDto){
 
+        CustomerResponseDto customerResponseDto = customerService.addCustomer(customerRequestDto);
+
+        return new ResponseEntity<>(customerRequestDto, HttpStatus.CREATED);
+
+    }
 
     // get all female customers between age 20-30
 
