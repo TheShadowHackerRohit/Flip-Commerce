@@ -1,18 +1,24 @@
 package com.example.FlipCommerce.service.serviceImpl;
 
+import com.example.FlipCommerce.Exception.CustomerNotFoundException;
+import com.example.FlipCommerce.Exception.EmptyCartException;
+import com.example.FlipCommerce.Exception.InsufficientQuantityException;
+import com.example.FlipCommerce.Exception.InvalidCardException;
+import com.example.FlipCommerce.dtos.RequestDTO.CheckoutRequestDto;
 import com.example.FlipCommerce.dtos.RequestDTO.ItemRequestDto;
 import com.example.FlipCommerce.dtos.ResponseDTO.CartResponseDto;
-import com.example.FlipCommerce.model.Cart;
-import com.example.FlipCommerce.model.Customer;
-import com.example.FlipCommerce.model.Item;
-import com.example.FlipCommerce.model.Product;
-import com.example.FlipCommerce.repository.CartRepository;
-import com.example.FlipCommerce.repository.CustomerRepository;
-import com.example.FlipCommerce.repository.ProductRepository;
+import com.example.FlipCommerce.dtos.ResponseDTO.OrderResponseDto;
+import com.example.FlipCommerce.model.*;
+import com.example.FlipCommerce.repository.*;
 import com.example.FlipCommerce.service.CartService;
+import com.example.FlipCommerce.service.OrderService;
 import com.example.FlipCommerce.transformer.CartTransformer;
+import com.example.FlipCommerce.transformer.OrderTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Date;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -25,6 +31,15 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     ProductRepository productRepository;
+
+    @Autowired
+    CardRepository cardRepository;
+
+    @Autowired
+    OrderService orderService;
+
+    @Autowired
+    OrderRepository orderRepository;
 
     @Override
     public CartResponseDto addCart(Item item, ItemRequestDto itemRequestDto) {
@@ -49,5 +64,45 @@ public class CartServiceImpl implements CartService {
 
         CartResponseDto cartResponseDto = CartTransformer.CartToCartResponseDto(savedCart);
         return cartResponseDto;
+    }
+
+    public OrderResponseDto checkoutCart(CheckoutRequestDto checkoutRequestDto){
+
+        Customer customer = customerRepository.findByEmailId(checkoutRequestDto.getCustomerEmailId());
+        if (customer == null){
+            throw new CustomerNotFoundException("Customer does not exist");
+        }
+
+        Card card = cardRepository.findByCardNo(checkoutRequestDto.getCardNo());
+        Date date = new Date();
+        if (card == null || card.getCvv() != checkoutRequestDto.getCvv()){//change from after to before || date.before(card.getValidTill())
+            throw new InvalidCardException("Card is expired");
+        }
+
+        Cart cart = customer.getCart();
+        if (cart.getItems().size() == 0){
+            throw new EmptyCartException("Cart is empty!");
+        }
+
+
+        try {
+            OrderEntity order = orderService.placeOrder(cart,card);
+            resetCart(cart);
+            OrderEntity savedOrder = orderRepository.save(order);
+            customer.getOrders().add(savedOrder);
+            return OrderTransformer.OrderToOrderResponseDto(savedOrder);
+
+        }catch (InsufficientQuantityException e){
+            throw e;
+        }
+
+    }
+
+    private void resetCart(Cart cart){
+        cart.setCartTotal(0);
+        for(Item item : cart.getItems()){
+            item.setCart(null);
+        }
+        cart.setItems(new ArrayList<>());
     }
 }

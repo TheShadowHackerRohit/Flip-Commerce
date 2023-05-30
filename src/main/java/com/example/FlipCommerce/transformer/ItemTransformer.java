@@ -1,14 +1,13 @@
 package com.example.FlipCommerce.transformer;
 
+import com.example.FlipCommerce.dtos.RequestDTO.ItemRequestDto;
 import com.example.FlipCommerce.dtos.ResponseDTO.ItemResponseDto;
-import com.example.FlipCommerce.model.Customer;
 import com.example.FlipCommerce.model.Item;
-import com.example.FlipCommerce.model.Product;
 
 public class ItemTransformer {
 
 
-    public static Item ItemRequestDtoToItem(Product product, Customer customer, int requiredQuantity) {
+    public static Item ItemRequestDtoToItem( int requiredQuantity) {
 
 
         return Item.builder()

@@ -1,22 +1,30 @@
 package com.example.FlipCommerce.dtos.ResponseDTO;
 
-
 import com.example.FlipCommerce.dtos.RequestDTO.ItemRequestDto;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.Date;
+import java.util.List;
+
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-public class ItemResponseDto {
+public class OrderResponseDto {
 
-    int quantityAdded;
+    String customerName;
 
-    String productName;
+    String orderNo;
 
-    int price;
+    int totalValue;
 
+    String cardUsed;
+
+    Date orderDate;
+
+    List<ItemResponseDto> items;
 
 }

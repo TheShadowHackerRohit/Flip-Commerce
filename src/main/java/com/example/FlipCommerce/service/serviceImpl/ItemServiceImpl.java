@@ -53,7 +53,7 @@ public class ItemServiceImpl implements ItemService {
             throw new InsufficientQuantityException("Sorry! The required quantity is not available");
         }
 
-        Item item = ItemTransformer.ItemRequestDtoToItem(product,customer,itemRequestDto.getRequiredQuantity());
+        Item item = ItemTransformer.ItemRequestDtoToItem(itemRequestDto.getRequiredQuantity());
 
 //        product.getItems().add(item);
 

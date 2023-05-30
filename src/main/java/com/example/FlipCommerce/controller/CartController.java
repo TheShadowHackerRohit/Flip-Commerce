@@ -1,7 +1,9 @@
 package com.example.FlipCommerce.controller;
 
+import com.example.FlipCommerce.dtos.RequestDTO.CheckoutRequestDto;
 import com.example.FlipCommerce.dtos.RequestDTO.ItemRequestDto;
 import com.example.FlipCommerce.dtos.ResponseDTO.CartResponseDto;
+import com.example.FlipCommerce.dtos.ResponseDTO.OrderResponseDto;
 import com.example.FlipCommerce.model.Item;
 import com.example.FlipCommerce.service.CartService;
 import com.example.FlipCommerce.service.ItemService;
@@ -34,7 +36,23 @@ public class CartController {
         }catch (RuntimeException e){
             return  new ResponseEntity(e.getMessage(),HttpStatus.BAD_REQUEST);
         }
+    }
 
+    @PostMapping("/checkout")// correct the bug
+    public ResponseEntity checkoutCart(@RequestBody CheckoutRequestDto checkoutRequestDto){
+
+        try {
+            OrderResponseDto orderResponseDto = cartService.checkoutCart(checkoutRequestDto);
+            return new ResponseEntity(orderResponseDto,HttpStatus.CREATED);
+        }
+        catch (RuntimeException e){
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
 
     }
+
+    // add the functionality of email sending in direct order and checkout cart
+    // kunaljindal995@gmail.com
+
+    // integrate swagger
 }
