@@ -13,11 +13,11 @@ import com.example.FlipCommerce.service.OrderService;
 import com.example.FlipCommerce.transformer.ItemTransformer;
 import com.example.FlipCommerce.transformer.OrderTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -32,6 +32,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     OrderRepository orderRepository;
+
+    @Autowired
+    private JavaMailSender emailSender;
 
     @Override
     public OrderResponseDto placeOrder(OrderRequestDto orderRequestDto) {
@@ -82,7 +85,31 @@ public class OrderServiceImpl implements OrderService {
 
         product.getItems().add(savedOrder.getItems().get(0));
 
+
+
+        //send email
+        String text = "Congrats !"+ customer.getName()+ " You have Book " + product.getName() +" with Order number "+ orderEntity.getOrderNo() +". Your order will arrive soon";
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("rohitsahume0104@gmail.com");
+        message.setTo(customer.getEmailId());
+        message.setSubject("Order Placed !!!!");
+        message.setText(text);
+        emailSender.send(message);
+
+
+
+
         return OrderTransformer.OrderToOrderResponseDto(orderEntity);
+    }
+
+    private String generateMaskedCardNO(Card card){
+        String cardNo = "";
+        String originalCardNo = card.getCardNo();
+        for(int i = 0 ; i < card.getCardNo().length() ; i++){
+            cardNo += "*";
+        }
+        cardNo += originalCardNo.substring(originalCardNo.length()-4);
+        return cardNo;
     }
 
     public OrderEntity placeOrder(Cart cart , Card card){
@@ -115,14 +142,86 @@ public class OrderServiceImpl implements OrderService {
 
 
 
+    @Override
+    public List<OrderResponseDto> getTopKOrdersMaxOrderValue(int k) {
+//        int max = orderRepository.getMaxOrderValue();
 
-    private String generateMaskedCardNO(Card card){
-        String cardNo = "";
-        String originalCardNo = card.getCardNo();
-        for(int i = 0 ; i < card.getCardNo().length() ; i++){
-            cardNo += "*";
+        List<OrderEntity> orderEntityList = orderRepository.getAllOrderDescendingByOrderValue();
+        int size = orderEntityList.size();
+        if(size > k){
+            for (int i = k ; i < size ; i++){
+                orderEntityList.remove(k);// nice concept here
+            }
         }
-        cardNo += originalCardNo.substring(originalCardNo.length()-4);
-        return cardNo;
+        List<OrderResponseDto> orderResponseDtoList = new ArrayList<>();
+        for (OrderEntity order : orderEntityList){
+            orderResponseDtoList.add(OrderTransformer.OrderToOrderResponseDto(order));
+        }
+        return orderResponseDtoList;
     }
+
+    @Override
+    public List<OrderResponseDto> getOrderOfACustomer(String emailId) {
+        Customer customer = customerRepository.findByEmailId(emailId);
+        if (customer == null){
+            throw new CustomerNotFoundException("Customer does not exist");
+        }
+        List<OrderEntity> orderEntityList = customer.getOrders();
+
+        List<OrderResponseDto> orderResponseDtoList = new ArrayList<>();
+        for (OrderEntity order : orderEntityList){
+            orderResponseDtoList.add(OrderTransformer.OrderToOrderResponseDto(order));
+        }
+        return orderResponseDtoList;
+    }
+
+    @Override
+    public List<OrderResponseDto> getTopKOrderOfACustomer(String emailId, int k) {
+
+        Customer customer = customerRepository.findByEmailId(emailId);
+        if (customer == null){
+            throw new CustomerNotFoundException("Customer does not exist");
+        }
+        List<OrderEntity> orderEntityList = customer.getOrders();
+
+        Collections.sort(orderEntityList,(x,y) -> y.getTotalValue() - x.getTotalValue());
+        int size = orderEntityList.size();
+        if(size > k){
+            for (int i = k ; i < size ; i++){
+                orderEntityList.remove(k);// notice it too
+            }
+        }
+        List<OrderResponseDto> orderResponseDtoList = new ArrayList<>();
+        for (OrderEntity order : orderEntityList){
+            orderResponseDtoList.add(OrderTransformer.OrderToOrderResponseDto(order));
+        }
+
+        return orderResponseDtoList;
+    }
+
+    @Override
+    public List<OrderResponseDto> getKRecentlyOrderCustomer(String emailId, int k) {
+
+        Customer customer = customerRepository.findByEmailId(emailId);
+        if (customer == null){
+            throw new CustomerNotFoundException("Customer does not exist");
+        }
+        List<OrderEntity> orderEntityList = customer.getOrders();
+
+       Collections.reverse(orderEntityList);
+
+        int size = orderEntityList.size();
+        if(size > k){
+            for (int i = k ; i < size ; i++){
+                orderEntityList.remove(k);// notice it too
+            }
+        }
+        List<OrderResponseDto> orderResponseDtoList = new ArrayList<>();
+        for (OrderEntity order : orderEntityList){
+            orderResponseDtoList.add(OrderTransformer.OrderToOrderResponseDto(order));
+        }
+
+        return orderResponseDtoList;
+    }
+
 }

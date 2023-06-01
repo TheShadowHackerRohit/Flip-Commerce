@@ -8,10 +8,9 @@ import com.example.FlipCommerce.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/order")
@@ -34,10 +33,31 @@ public class OrderController {
 
     // get top 5 orders with the highest order value
 
+    @GetMapping("/get-top-k-orders-with-max-order-value")
+    public ResponseEntity getTopKOrdersMaxOrderValue(@RequestParam int k){
+        List<OrderResponseDto> orderResponseDtoList = orderService.getTopKOrdersMaxOrderValue(k);
+        return new ResponseEntity<>(orderResponseDtoList,HttpStatus.FOUND);
+    }
+
     // all the orders of a particular customer
+    @GetMapping("/get-orders-of-a-customer")
+    public ResponseEntity getOrderOfACustomer(@RequestParam String emailId){
+        List<OrderResponseDto> orderResponseDtoList = orderService.getOrderOfACustomer(emailId);
+        return new ResponseEntity<>(orderResponseDtoList,HttpStatus.FOUND);
+    }
 
     // top 5 orders of a customer based on cost
+    @GetMapping("/get-top-k-orders-of-a-customer")
+    public ResponseEntity getTopKOrderOfACustomer(@RequestParam String emailId,@RequestParam int k){
+        List<OrderResponseDto> orderResponseDtoList = orderService.getTopKOrderOfACustomer(emailId,k);
+        return new ResponseEntity<>(orderResponseDtoList,HttpStatus.FOUND);
+    }
 
     // top 5 recently ordered orders of a customer
+    @GetMapping("/top-k-recently-ordered-customer")
+    public ResponseEntity getKRecentlyOrderCustomer(@RequestParam String emailId,int k){
+        List<OrderResponseDto> orderResponseDtoList = orderService.getKRecentlyOrderCustomer(emailId,k);
+        return new ResponseEntity<>(orderResponseDtoList,HttpStatus.FOUND);
+    }
 
 }

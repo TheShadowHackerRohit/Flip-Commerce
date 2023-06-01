@@ -14,4 +14,11 @@ public interface OrderService {
 
     public OrderEntity placeOrder(Cart cart , Card card);
 
+    List<OrderResponseDto> getTopKOrdersMaxOrderValue(int k);
+
+    List<OrderResponseDto> getOrderOfACustomer(String emailId);
+
+    List<OrderResponseDto> getTopKOrderOfACustomer(String emailId, int k);
+
+    List<OrderResponseDto> getKRecentlyOrderCustomer(String emailId, int k);
 }

@@ -7,10 +7,9 @@ import com.example.FlipCommerce.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/customer")
@@ -29,10 +28,25 @@ public class CustomerController {
 
     }
 
+    // customers who have ordered at least 'k' orders
+    @GetMapping("/customer-k-order")
+    public ResponseEntity customerKOrders(@RequestParam int k){
+        List<CustomerResponseDto> customerResponseDtoList = customerService.customerKOrders(k);
+        return new ResponseEntity<>(customerResponseDtoList,HttpStatus.OK);
+    }
+
     // get all female customers between age 20-30
 
-    // get all male customers less than 45
 
-    // customers who have ordered atleast 'k' orders
+//    @GetMapping("/get-female-customers-age-between")
+//    public ResponseEntity getFemaleCustomerAgeBetween(@RequestParam int fromAge, @RequestParam int toAge ){
+//        List<CustomerResponseDto> customerResponseDtoList = customerService.getFemaleCustomerAgeBetween(fromAge,toAge);
+//        return new ResponseEntity<>(customerResponseDtoList,HttpStatus.OK);
+//    }
+
+
+    // get all male customers age less than 45
+
+
 
 }

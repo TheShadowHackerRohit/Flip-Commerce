@@ -15,6 +15,8 @@ import com.example.FlipCommerce.service.OrderService;
 import com.example.FlipCommerce.transformer.CartTransformer;
 import com.example.FlipCommerce.transformer.OrderTransformer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -40,6 +42,9 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     OrderRepository orderRepository;
+
+    @Autowired
+    private JavaMailSender emailSender;
 
     @Override
     public CartResponseDto addCart(Item item, ItemRequestDto itemRequestDto) {
@@ -90,6 +95,18 @@ public class CartServiceImpl implements CartService {
             resetCart(cart);
             OrderEntity savedOrder = orderRepository.save(order);
             customer.getOrders().add(savedOrder);
+
+            //send email
+            String text = "Congrats ! "+ customer.getName()+ " App apna poora cat khali kr rhe hain";
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("rohitsahume0104@gmail.com");
+            message.setTo(customer.getEmailId());
+            message.setSubject("Cart Empty!!!!");
+            message.setText(text);
+            emailSender.send(message);
+
+
+
             return OrderTransformer.OrderToOrderResponseDto(savedOrder);
 
         }catch (InsufficientQuantityException e){
